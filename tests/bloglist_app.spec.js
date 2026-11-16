@@ -11,6 +11,13 @@ describe('Blog app', () => {
         password: 'password'
       }
     })
+    await request.post('/api/users', {
+      data: {
+        name: 'test user',
+        username: 'testuser',
+        password: 'password'
+      }
+    })
 
     await page.goto('/')
   })
@@ -75,6 +82,15 @@ describe('Blog app', () => {
         page.on('dialog', dialog => dialog.accept())
 
         await expect(page.getByText('This is a test blog Jhon Doe')).not.toBeVisible()
+      })
+
+      test('only user who created the blog sees the remove button', async ({ page }) => {
+        await page.getByRole('button', { name: 'logout' }).click()
+        await loginWith(page, 'testuser', 'password')
+        const blogElement = page.getByText('This is a test blog Jhon Doe').locator('..')
+        await blogElement.getByRole('button', { name: 'show' }).click()
+        
+        await expect(page.getByRole('button', { name: 'remove' })).not.toBeVisible()
       })
     })
   })
