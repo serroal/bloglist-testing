@@ -92,6 +92,18 @@ describe('Blog app', () => {
         
         await expect(page.getByRole('button', { name: 'remove' })).not.toBeVisible()
       })
+
+      test('blogs are ordered by likes', async ({ page }) => {
+        const firstBlog = page.getByTestId('blog-item').first()
+        await expect(firstBlog).toContainText('This is a test blog Jhon Doe')
+
+        const blogElement = page.getByText('This is another test blog Jane Doe').locator('..')
+        await blogElement.getByRole('button', { name: 'show' }).click()
+        await blogElement.getByRole('button', { name: 'like' }).click()
+
+        const newFirstBlog = page.getByTestId('blog-item').first()
+        await expect(newFirstBlog).toContainText('This is another test blog Jane Doe')
+      })
     })
   })
 })
