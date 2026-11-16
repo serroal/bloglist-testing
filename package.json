@@ -1,0 +1,17 @@
+{
+  "name": "bloglist-testing",
+  "version": "0.0.1",
+  "description": "",
+  "license": "MIT",
+  "author": "Sergio R",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^26.6.6"
+  }
+}
