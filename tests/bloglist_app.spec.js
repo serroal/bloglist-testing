@@ -65,6 +65,17 @@ describe('Blog app', () => {
 
         await expect(page.getByText('likes 1')).toBeVisible()
       })
+
+      test('one of those can be deleted', async ({ page }) => {
+        const blogElement = page.getByText('This is a test blog Jhon Doe').locator('..')
+        await blogElement.getByRole('button', { name: 'show' }).click()
+        
+        page.getByRole('button', { name: 'remove' }).click()
+
+        page.on('dialog', dialog => dialog.accept())
+
+        await expect(page.getByText('This is a test blog Jhon Doe')).not.toBeVisible()
+      })
     })
   })
 })
