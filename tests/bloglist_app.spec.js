@@ -35,10 +35,8 @@ describe('Blog app', () => {
     test('fails with wrong credentials', async ({ page }) => {
       await loginWith(page, 'serroal', 'wrong')
 
-      const errorDiv = page.locator('.error')  
+      const errorDiv = page.getByRole('alert')
       await expect(errorDiv).toContainText('wrong username or password')
-      await expect(errorDiv).toHaveCSS('border-style', 'solid')
-      await expect(errorDiv).toHaveCSS('color', 'rgb(255, 0, 0)')
     })
   })
 
@@ -51,7 +49,7 @@ describe('Blog app', () => {
     test('a new blog can be created', async ({ page }) => {
       await createBlog(page, 'This is a test blog', 'Jhon Doe', 'http://testblog.com')
 
-      const successDiv = page.locator('.success')  
+      const successDiv = page.getByRole('alert')
       await expect(successDiv).toContainText('a new blog This is a test blog by Jhon Doe added', { exact: true })
       await expect(page.getByText('This is a test blog by Jhon Doe', { exact: true })).toBeVisible()
     })
@@ -65,10 +63,9 @@ describe('Blog app', () => {
       test('one of those can be liked', async ({ page }) => {
         await page.getByRole('link', { name: 'This is a test blog by Jhon Doe' }).click()
 
-        const likesElement = page.getByText('likes 0')
-        await likesElement.getByRole('button', { name: 'like' }).click()
+        await page.getByRole('button', { name: 'like' }).click()
 
-        await expect(page.getByText('likes 1')).toBeVisible()
+        await expect(page.getByText('1 likes')).toBeVisible()
       })
 
       test('one of those can be deleted', async ({ page }) => {
