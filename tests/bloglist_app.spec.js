@@ -22,16 +22,14 @@ describe('Blog app', () => {
     await page.goto('/')
   })
 
-  test('Login form is shown', async ({ page }) => {
-    const locator = page.getByText('Log in to application')
-    await expect(locator).toBeVisible()
-  })
-
   describe('Login', () => {
+    beforeEach(async ({ page }) => {
+      await page.getByRole('link', { name: 'login' }).click()
+    })
     test('succeeds with correct credentials', async ({ page }) => {
       await loginWith(page, 'serroal', 'password')
 
-      await expect(page.getByText('Sergio R logged in')).toBeVisible()
+      await expect(page.getByRole('button', { name: 'logout' })).toBeVisible()
     })
 
     test('fails with wrong credentials', async ({ page }) => {
@@ -46,6 +44,7 @@ describe('Blog app', () => {
 
   describe('When logged in', () => {
     beforeEach(async ({ page }) => {
+      await page.getByRole('link', { name: 'login' }).click()
       await loginWith(page, 'serroal', 'password')
     })
 
@@ -53,8 +52,8 @@ describe('Blog app', () => {
       await createBlog(page, 'This is a test blog', 'Jhon Doe', 'http://testblog.com')
 
       const successDiv = page.locator('.success')  
-      await expect(successDiv).toContainText('a new blog This is a test blog by Jhon Doe added')
-      await expect(page.getByText('This is a test blog Jhon Doe')).toBeVisible()
+      await expect(successDiv).toContainText('a new blog This is a test blog by Jhon Doe added', { exact: true })
+      await expect(page.getByText('This is a test blog by Jhon Doe', { exact: true })).toBeVisible()
     })
 
     describe('and several blogs exists', () => {    
@@ -64,8 +63,7 @@ describe('Blog app', () => {
       })
 
       test('one of those can be liked', async ({ page }) => {
-        const blogElement = page.getByText('This is a test blog Jhon Doe').locator('..')
-        await blogElement.getByRole('button', { name: 'show' }).click()
+        await page.getByRole('link', { name: 'This is a test blog by Jhon Doe' }).click()
 
         const likesElement = page.getByText('likes 0')
         await likesElement.getByRole('button', { name: 'like' }).click()
@@ -74,35 +72,33 @@ describe('Blog app', () => {
       })
 
       test('one of those can be deleted', async ({ page }) => {
-        const blogElement = page.getByText('This is a test blog Jhon Doe').locator('..')
-        await blogElement.getByRole('button', { name: 'show' }).click()
+        await page.getByRole('link', { name: 'This is a test blog by Jhon Doe' }).click()
         
-        page.getByRole('button', { name: 'remove' }).click()
-
         page.on('dialog', dialog => dialog.accept())
+        await page.getByRole('button', { name: 'remove' }).click()
 
-        await expect(page.getByText('This is a test blog Jhon Doe')).not.toBeVisible()
+        await expect(page.getByRole('link', { name: 'This is a test blog by Jhon Doe' })).not.toBeVisible()
       })
 
       test('only user who created the blog sees the remove button', async ({ page }) => {
         await page.getByRole('button', { name: 'logout' }).click()
+        await page.getByRole('link', { name: 'login' }).click()
         await loginWith(page, 'testuser', 'password')
-        const blogElement = page.getByText('This is a test blog Jhon Doe').locator('..')
-        await blogElement.getByRole('button', { name: 'show' }).click()
+        await page.getByRole('link', { name: 'This is a test blog by Jhon Doe' }).click()
         
         await expect(page.getByRole('button', { name: 'remove' })).not.toBeVisible()
       })
 
       test('blogs are ordered by likes', async ({ page }) => {
-        const firstBlog = page.getByTestId('blog-item').first()
-        await expect(firstBlog).toContainText('This is a test blog Jhon Doe')
+        const firstBlog = page.getByRole('listitem').first()
+        await expect(firstBlog).toContainText('This is a test blog by Jhon Doe')
 
-        const blogElement = page.getByText('This is another test blog Jane Doe').locator('..')
-        await blogElement.getByRole('button', { name: 'show' }).click()
-        await blogElement.getByRole('button', { name: 'like' }).click()
+        await page.getByRole('link', { name: 'This is another test blog by Jane Doe' }).click()
+        await page.getByRole('button', { name: 'like' }).click()
 
-        const newFirstBlog = page.getByTestId('blog-item').first()
-        await expect(newFirstBlog).toContainText('This is another test blog Jane Doe')
+        await page.getByText('blogs').click()
+        const newFirstBlog = page.getByRole('listitem').first()
+        await expect(newFirstBlog).toContainText('This is another test blog by Jane Doe')
       })
     })
   })
